@@ -6,27 +6,43 @@ import io.realm.annotations.PrimaryKey;
 public class Contact extends RealmObject {
     @PrimaryKey
     private String id;
+    private String firstname;
+    private String lastname;
+    private String phoneNumber;
+    public byte[] profileImageArray;
 
+
+    public Contact() {
+    }
+
+    public Contact(String firstname, String lastname, String phoneNumber, byte[] profileImageArray) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.phoneNumber = phoneNumber;
+        this.profileImageArray = profileImageArray;
+    }
+
+    /**
+     * Getters and settters
+     *
+     */
     public String getId() {
         return id;
     }
 
-    public Contact() {
-    }
 
     public void setId(String id) {
         this.id = id;
     }
 
-    private  String firstname;
-    private  String lastname;
-    private  String phoneNumber;
-
-    public Contact(String firstname, String lastname, String phoneNumber) {
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.phoneNumber = phoneNumber;
+    public byte[] getProfileImageArray() {
+        return profileImageArray;
     }
+
+    public void setProfileImageArray(byte[] profileImageArray) {
+        this.profileImageArray = profileImageArray;
+    }
+
 
     public String getFirstname() {
         return firstname;

@@ -37,8 +37,14 @@ public class DisplayActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(mAdapter!=null){
+        if (mAdapter != null) {
             mAdapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        myRealm.close();
     }
 }

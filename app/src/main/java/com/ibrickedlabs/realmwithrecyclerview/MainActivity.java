@@ -1,6 +1,9 @@
 package com.ibrickedlabs.realmwithrecyclerview;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,13 +11,18 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.UUID;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import io.realm.Realm;
 
 public class MainActivity extends AppCompatActivity {
+    private static final int GALLERY_CODE = 123;
     //EditText
     private EditText firstName;
     private EditText lastName;
@@ -25,9 +33,12 @@ public class MainActivity extends AppCompatActivity {
 
     //Realm
     private Realm myRealm;
+    private byte[] profileArray;
 
     //Llayout
     LinearLayout toplayout;
+
+    private CircleImageView contactImage;
 
 
     @Override
@@ -44,6 +55,20 @@ public class MainActivity extends AppCompatActivity {
         //Top linear layout
         toplayout = (LinearLayout) findViewById(R.id.topLayout);
 
+        //Imageview
+        contactImage=(CircleImageView) findViewById(R.id.contactPicture);
+        contactImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                intent.putExtra(Intent.EXTRA_LOCAL_ONLY,true);
+                startActivityForResult(intent,GALLERY_CODE);
+            }
+        });
+
+
+
         //Get the default instance of Realm
         myRealm = Realm.getDefaultInstance();
 
@@ -55,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
                 final String lnameStr = lastName.getText().toString();
                 final String phnStr = phoneNumber.getText().toString();
 
-                if (!TextUtils.isEmpty(fnameStr) && !TextUtils.isEmpty(lnameStr) && !TextUtils.isEmpty(phnStr)) {
+                if (!TextUtils.isEmpty(fnameStr) && !TextUtils.isEmpty(lnameStr) && !TextUtils.isEmpty(phnStr) && profileArray.length>0) {
 
                     //we are adding synchronously
                     // UUID --> genereates random and unique id since we have id as PK                                  in our model class we are using it
@@ -68,10 +93,13 @@ public class MainActivity extends AppCompatActivity {
                             contact.setFirstname(fnameStr);
                             contact.setLastname(lnameStr);
                             contact.setPhoneNumber(phnStr);
+                            contact.setProfileImageArray(profileArray);
                             Snackbar.make(toplayout, "Saved successfully!", Snackbar.LENGTH_SHORT).show();
                             firstName.setText("");
                             lastName.setText("");
                             phoneNumber.setText("");
+                            //Set the image back to previous one
+                            contactImage.setImageResource(R.drawable.cp);
 
                         }
                     });
@@ -91,5 +119,46 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode==GALLERY_CODE && resultCode==RESULT_OK){
+            //Get the uri of the selected image
+            Uri uri=data.getData();
+            Bitmap bitmap = null;
+            try {
+                //Convert uri into bitmap
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),uri);
+                //set the image to imageview for reference
+                contactImage.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            //convert bitmap to byte[],inorder to store into realm
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            //Fetching out the desire format
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            //Assign to gloabl var
+            profileArray = stream.toByteArray();
+
+
+        }
+
+
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        myRealm.close();
     }
 }

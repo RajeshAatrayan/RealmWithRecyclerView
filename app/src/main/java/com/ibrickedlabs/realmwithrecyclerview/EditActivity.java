@@ -113,4 +113,10 @@ public class EditActivity extends AppCompatActivity {
         lastName.setText(contact.getLastname());
         phoneNumber.setText(contact.getPhoneNumber());
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        myRealm.close();
+    }
 }

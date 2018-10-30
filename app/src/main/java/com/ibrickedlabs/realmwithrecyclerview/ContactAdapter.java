@@ -2,6 +2,8 @@ package com.ibrickedlabs.realmwithrecyclerview;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,6 +13,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
@@ -40,6 +43,12 @@ class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHolder> {
         Contact contact = realmResults.get(position);
         holder.contactNameView.setText(contact.getFirstname() + " " + contact.getLastname());
         holder.phoneNumberView.setText(contact.getPhoneNumber());
+        //Get the array from realm
+        byte[] array = contact.getProfileImageArray();
+        //decode the array back to bitmap
+        Bitmap bitmap = BitmapFactory.decodeByteArray(array, 0, array.length);
+        //set the image into imageview
+        holder.profilePic.setImageBitmap(bitmap);
     }
 
     @Override
@@ -50,11 +59,13 @@ class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHolder> {
     class ViewHolder extends RecyclerView.ViewHolder {
         private TextView contactNameView;
         private TextView phoneNumberView;
+        private CircleImageView profilePic;
         private ImageView deleteButton;
         private ImageView editButton;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            profilePic = (CircleImageView) itemView.findViewById(R.id.cpPic);
             contactNameView = (TextView) itemView.findViewById(R.id.contactName);
             phoneNumberView = (TextView) itemView.findViewById(R.id.mobileNumber);
             deleteButton = (ImageView) itemView.findViewById(R.id.delete);
